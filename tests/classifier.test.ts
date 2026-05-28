@@ -73,6 +73,13 @@ describe("classifier", () => {
     expect(result.categories).toEqual(["bin_entrypoint_added", "credential_surface"]);
   });
 
+  it("elevates added bin entrypoints with shell signals", () => {
+    const result = classify({ bin: {} }, { bin: { "setup-sh": "./bin/setup.sh" } });
+
+    expect(result.label).toBe("elevated_review");
+    expect(result.categories).toEqual(["bin_entrypoint_added", "shell_execution_surface"]);
+  });
+
   it("keeps finding ids stable and ordered", () => {
     const result = classify(
       { dependencies: {}, scripts: {} },

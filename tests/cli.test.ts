@@ -78,4 +78,18 @@ describe("cli", () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain("--json-out must not overwrite either input file");
   });
+
+  it("refuses json-out symlinked to an input file", () => {
+    const tempDir = makeTempDir();
+    const before = writePackage(tempDir, "before.package.json", { dependencies: {} });
+    const after = writePackage(tempDir, "after.package.json", { dependencies: {} });
+    const jsonOut = path.join(tempDir, "linked-report.json");
+    fs.symlinkSync(before, jsonOut);
+
+    const result = captureRun(["--before", before, "--after", after, "--json-out", jsonOut]);
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("--json-out must not overwrite either input file");
+    expect(JSON.parse(fs.readFileSync(before, "utf8"))).toEqual({ dependencies: {} });
+  });
 });

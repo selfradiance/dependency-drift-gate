@@ -133,7 +133,7 @@ export function classifyDrift(diff: DriftDiff): ClassificationResult {
         });
       }
 
-      if (SCRIPT_SHELL_PATTERNS.some((pattern) => pattern.test(scriptText))) {
+      if (hasShellExecutionSignal(scriptText)) {
         draftFindings.push({
           label: "elevated_review",
           category: "shell_execution_surface",
@@ -157,7 +157,18 @@ export function classifyDrift(diff: DriftDiff): ClassificationResult {
     if (change.type === "added" || change.type === "changed") {
       const text = `${change.name} ${change.afterEntry ?? ""}`;
       const surfaceCategories = inferSurfaceCategories(text);
-      const binAddedWithSurface = change.type === "added" && surfaceCategories.length > 0;
+      const hasShellSurface = hasShellExecutionSignal(text);
+      const binAddedWithSurface =
+        change.type === "added" && (surfaceCategories.length > 0 || hasShellSurface);
+
+      if (hasShellSurface) {
+        draftFindings.push({
+          label: binAddedWithSurface ? "elevated_review" : "review",
+          category: "shell_execution_surface",
+          message: `Bin entry introduces shell execution surface signal: ${change.name}.`,
+          evidence: binEvidence(change)
+        });
+      }
 
       for (const category of surfaceCategories) {
         draftFindings.push({
@@ -308,6 +319,10 @@ function inferSurfaceCategories(text: string): CategoryTag[] {
   }
 
   return categories;
+}
+
+function hasShellExecutionSignal(text: string): boolean {
+  return SCRIPT_SHELL_PATTERNS.some((pattern) => pattern.test(text));
 }
 
 function matchesAnySignal(text: string, signals: string[]): boolean {

@@ -42,7 +42,7 @@ export function runCli(
 
   if (options.jsonOut) {
     const jsonOutPath = path.resolve(options.jsonOut);
-    if (jsonOutPath === beforePath || jsonOutPath === afterPath) {
+    if (jsonOutTargetsInput(jsonOutPath, beforePath, afterPath)) {
       io.stderr.write("--json-out must not overwrite either input file\n");
       return 1;
     }
@@ -124,6 +124,30 @@ function usage(): string {
     "  dependency-drift-gate --before <package.json> --after <package.json> [--json-out <report.json>]",
     ""
   ].join("\n");
+}
+
+function jsonOutTargetsInput(jsonOutPath: string, beforePath: string, afterPath: string): boolean {
+  if (jsonOutPath === beforePath || jsonOutPath === afterPath) {
+    return true;
+  }
+
+  if (!fs.existsSync(jsonOutPath)) {
+    return false;
+  }
+
+  const jsonOutStats = fs.statSync(jsonOutPath);
+  for (const inputPath of [beforePath, afterPath]) {
+    if (!fs.existsSync(inputPath)) {
+      continue;
+    }
+
+    const inputStats = fs.statSync(inputPath);
+    if (jsonOutStats.dev === inputStats.dev && jsonOutStats.ino === inputStats.ino) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function formatError(error: unknown): string {
