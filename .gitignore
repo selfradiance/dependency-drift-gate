@@ -1,0 +1,5 @@
+node_modules/
+dist/
+coverage/
+.dependency-drift-gate/
+DEPENDENCY_DRIFT_GATE_PROJECT_CONTEXT.md

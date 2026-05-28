@@ -1,0 +1,39 @@
+{
+  "name": "dependency-drift-gate",
+  "version": "0.1.0",
+  "description": "Local deterministic package.json drift inspection for Node/npm projects.",
+  "type": "module",
+  "bin": {
+    "dependency-drift-gate": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "inspect": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "demo:no-drift": "npm run inspect -- --before fixtures/before.safe.package.json --after fixtures/after.no-drift.package.json",
+    "demo:review": "npm run inspect -- --before fixtures/before.safe.package.json --after fixtures/after.added-dependency.package.json",
+    "demo:elevated": "npm run inspect -- --before fixtures/before.safe.package.json --after fixtures/after.lifecycle-script.package.json"
+  },
+  "keywords": [
+    "dependencies",
+    "package-json",
+    "cli"
+  ],
+  "author": "James Toole",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}
